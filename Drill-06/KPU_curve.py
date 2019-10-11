@@ -19,6 +19,8 @@ def handle_events():
 
 def move_curve_4points(p1, p2, p3, p4, distance, speed):
     global x, y
+    global character_dir
+    global temp
 
     # move p1-p2
     t = distance / speed
@@ -27,6 +29,12 @@ def move_curve_4points(p1, p2, p3, p4, distance, speed):
     y = ((-t ** 3 + 2 * t ** 2 - t) * p1[1] + (3 * t ** 3 - 5 * t ** 2 + 2) * p2[1] + (
             -3 * t ** 3 + 4 * t ** 2 + t) * p3[1] + (t ** 3 - t ** 2) * p4[1]) / 2
 
+    if temp < x:
+        character_dir = 1
+    elif temp >= x:
+        character_dir = 0
+
+    temp = x
     pass
 
 
@@ -40,8 +48,9 @@ x, y = random_points[0][0], random_points[0][1]
 frame = 0
 i = 0
 n = 0
-ratio = 1000
+ratio = 500
 character_dir = 1
+temp = x
 hide_cursor()
 
 while running:
@@ -54,6 +63,7 @@ while running:
     frame = (frame + 1) % 8
     move_curve_4points(random_points[n % 10], random_points[(n+1) % 10],
                        random_points[(n+2) % 10], random_points[(n+3) % 10], i, ratio)
+
     i += 1
     if i > ratio:
         i = 0
