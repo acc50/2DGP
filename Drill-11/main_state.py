@@ -98,6 +98,8 @@ def update():
     elif collide(boy, brick):
         boy.fall_stop()
         boy.move(*brick.get_velocity())
+    else:                                   
+        boy.fall()      # 충돌 X 시 항상 낙하
 
 
 def draw():

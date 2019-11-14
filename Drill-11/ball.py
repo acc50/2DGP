@@ -3,6 +3,9 @@ from pico2d import *
 import game_world
 import game_framework
 
+MIN_FALL_SPEED = 200  # 200 pps = 6 meter per sec
+MAX_FALL_SPEED = 400  # 400 pps = 12 meter per sec
+
 
 class Ball:
     image = None
@@ -29,20 +32,17 @@ class Ball:
         self.x += speed * brick_dir * game_framework.frame_time
 
     def fall(self):
-        self.fall_speed = random.randint(50, 200)
+        self.fall_speed = random.randint(MIN_FALL_SPEED, MAX_FALL_SPEED)
 
 
 class BigBall(Ball):    # Ball 을 상속받음
-    MIN_FALL_SPEED = 50  # 50 pps = 1.5 meter per sec
-    MAX_FALL_SPEED = 200  # 200 pps = 6 meter per sec
     image = None
 
     def __init__(self):
         if BigBall.image is None:
             BigBall.image = load_image('ball41x41.png')
         self.x, self.y = random.randint(0, 1600 - 1), 500
-        self.fall_speed = random.randint(BigBall.MIN_FALL_SPEED,
-                                         BigBall.MAX_FALL_SPEED)
+        self.fall_speed = random.randint(MIN_FALL_SPEED, MAX_FALL_SPEED)
 
     def get_bb(self):
         return self.x - 20, self.y - 20, self.x + 20, self.y + 20

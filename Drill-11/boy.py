@@ -50,8 +50,7 @@ class IdleState:
     @staticmethod
     def exit(boy, event):
         if event == SPACE:
-            if not boy.is_jump:
-                boy.jump_speed = JUMP_SPEED
+            if not boy.is_jump and boy.is_on_floor:
                 boy.jump_point = boy.y
                 boy.is_jump = True
         pass
@@ -60,7 +59,6 @@ class IdleState:
     def do(boy):
         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
         boy.timer -= 1
-        boy.y -= boy.fall_speed * game_framework.frame_time
 
         if boy.is_jump:
             boy.jump()
@@ -93,8 +91,7 @@ class RunState:
     @staticmethod
     def exit(boy, event):
         if event == SPACE:
-            if not boy.is_jump:
-                boy.jump_speed = JUMP_SPEED
+            if not boy.is_jump and boy.is_on_floor:
                 boy.jump_point = boy.y
                 boy.is_jump = True
 
@@ -105,7 +102,6 @@ class RunState:
         boy.x += boy.velocity * game_framework.frame_time
         boy.x = clamp(25, boy.x, 1600 - 25)
 
-        boy.y -= boy.fall_speed * game_framework.frame_time
         if boy.is_jump:
             boy.jump()
 
@@ -130,8 +126,6 @@ class SleepState:
     @staticmethod
     def do(boy):
         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
-
-        boy.y -= boy.fall_speed * game_framework.frame_time
 
     @staticmethod
     def draw(boy):
@@ -162,8 +156,9 @@ class Boy:
         self.dir = 1
         self.velocity = 0
         self.frame = 0
-        self.jump_speed = 0
+        self.jump_speed = JUMP_SPEED
         self.is_jump = False
+        self.is_on_floor = True
         self.jump_point = 0
         self.event_que = []
         self.cur_state = IdleState
@@ -193,16 +188,25 @@ class Boy:
             key_event = key_event_table[(event.type, event.key)]
             self.add_event(key_event)
 
-    def fall_stop(self):
-        self.fall_speed = 0
+    def fall_stop(self):        # 바닥에 닿으면 바닥에 닿았고 하고, 낙하속도 0으로 만듬
+        if not self.is_on_floor:  
+            self.is_on_floor = True
+        self.fall_speed = 0   
 
-    def move(self, brick_speed, brick_dir):
+    def move(self, brick_speed, brick_dir):      # brick 위에 있을 시 brick 이랑 같이 움직임
         self.x += brick_speed * brick_dir * game_framework.frame_time
 
     def jump(self):
+        if self.is_on_floor:
+            self.is_on_floor = False
+
         self.y += self.jump_speed * game_framework.frame_time
-        if self.y >= (self.jump_point + 150):
-            self.jump_speed = 0
-            self.fall_speed = FALL_SPEED
+        if self.y >= (self.jump_point + 150):       # 최고점 도달 시 점프 초기화
+            self.is_jump = False
             pass
 
+    def fall(self):
+        if not self.is_jump:    # 점프 중이 아니면 낙하속도 초기화
+            self.fall_speed = FALL_SPEED
+
+        self.y -= self.fall_speed * game_framework.frame_time       # boy 의 낙하
