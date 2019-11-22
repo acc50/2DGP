@@ -25,6 +25,7 @@ class Zombie:
     images = None
 
     def load_images(self):
+        self.font = load_font('ENCR10B.TTF', 16)
         if Zombie.images == None:
             Zombie.images = {}
             for name in animation_names:
@@ -43,8 +44,12 @@ class Zombie:
         self.load_images()
         self.dir = random.random()*2*math.pi # random moving direction
         self.speed = 0
-        self.timer = 1.0 # change direction every 1 sec when wandering
+        self.timer = 1.0  # change direction every 1 sec when wandering
         self.frame = 0
+
+        self.hp = 100
+        self.damage = 5
+
         self.build_behavior_tree()
 
     def calculate_current_position(self):
@@ -125,6 +130,9 @@ class Zombie:
 
 
     def draw(self):
+        draw_rectangle(*self.get_bb())
+        self.font.draw(self.x - 40, self.y + 50, '(HP: %d)' % self.hp, (255, 255, 0))
+
         if math.cos(self.dir) < 0:
             if self.speed == 0:
                 Zombie.images['Idle'][int(self.frame)].composite_draw(0, 'h', self.x, self.y, 100, 100)
@@ -135,6 +143,7 @@ class Zombie:
                 Zombie.images['Idle'][int(self.frame)].draw(self.x, self.y, 100, 100)
             else:
                 Zombie.images['Walk'][int(self.frame)].draw(self.x, self.y, 100, 100)
+
 
     def handle_event(self, event):
         pass
