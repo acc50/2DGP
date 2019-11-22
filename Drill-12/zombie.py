@@ -126,13 +126,15 @@ class Zombie:
 
         pass
 
-    def big_ball_eat(self):
-        
-        pass
+    def move_to_big_ball(self):
+        self.speed = RUN_SPEED_PPS
+        self.calculate_current_position()
+        return BehaviorTree.SUCCESS
 
-    def small_ball_eat(self):
-
-        pass
+    def move_to_small_ball(self):
+        self.speed = RUN_SPEED_PPS
+        self.calculate_current_position()
+        return BehaviorTree.SUCCESS
 
     def find_player(self):      # 탐색
         boy = main_state.get_boy()
@@ -151,31 +153,22 @@ class Zombie:
         return BehaviorTree.SUCCESS
         pass
 
-    def get_next_position(self):
-        self.target_x, self.target_y = self.patrol_positions[self.patrol_order % len(self.patrol_positions)]
-        self.patrol_order += 1
-        self.dir = math.atan2(self.target_y - self.y, self.target_x - self.x)
-        return BehaviorTree.SUCCESS
-        pass
-
-    def move_to_target(self):
-        self.speed = RUN_SPEED_PPS
-        self.calculate_current_position()
-        distance = (self.target_x - self.x) ** 2 + (self.target_y - self.y) ** 2
-
-        if distance < PIXEL_PER_METER ** 2:
-            return BehaviorTree.SUCCESS
-        else:
-            return BehaviorTree.RUNNING
-
-        pass
-
     def build_behavior_tree(self):
         wander_node = LeafNode("Wander", self.wander)
         find_player_node = LeafNode("Find Player", self.find_player)
         move_to_player_node = LeafNode("Move to Player", self.move_to_player)
-        chase_node = SequenceNode("Chase")
+        move_to_small_ball_node = LeafNode("Move to Small Ball", self.move_to_small_ball())
+        move_to_big_ball_node = LeafNode("Move to Big Ball", self.move_to_big_ball())
+        find_big_ball_node = LeafNode("Find Big Ball", self.find_big_balls())
+        find_small_ball_node = LeafNode("Find Small Ball", self.find_small_balls())
+        check_balls_node = LeafNode("Check Balls",self.check_balls())
+
+        chase_node = SequenceNode("Chase")      # 추적
         chase_node.add_children(find_player_node, move_to_player_node)
+
+        check_chase_node = SequenceNode("CheckChase")       # 추적 확인
+        check_chase_node.add_children(check_balls_node, chase_node)
+
         wander_chase_node = SelectorNode("WanderChase")
         wander_chase_node.add_children(chase_node, wander_node)
         self.bt = BehaviorTree(wander_chase_node)
