@@ -33,9 +33,14 @@ class Zombie:
 
     def __init__(self):
         # positions for origin at top, left
+        balls = main_state.get_balls()
+        ball_positions = []
+        for ball in balls:
+            ball_positions.append((ball.x, ball.y))
+
         positions = [(43, 750), (1118, 750), (1050, 530), (575, 220), (235, 33), (575, 220), (1050, 530), (1118, 750)]
         self.patrol_positions = []
-        for p in positions:
+        for p in ball_positions:
             self.patrol_positions.append((p[0], 1024 - p[1]))  # convert for origin at bottom, left
         self.patrol_order = 1
         self.target_x, self.target_y = None, None
@@ -71,7 +76,65 @@ class Zombie:
 
         pass
 
-    def find_player(self):
+    def check_balls(self):
+        balls = main_state.get_balls()
+        if len(balls) <= 0:     # 공이 남아있지 않으면
+            return BehaviorTree.SUCCESS     # 성공
+            pass
+        else:
+            return BehaviorTree.FAIL
+            pass
+        pass
+    
+    def find_big_balls(self):       # 큰 공 주변에 있는지 검사
+        big_balls = main_state.get_big_balls()
+        distance = 0
+        # 큰 공이 존재하면
+        if len(big_balls) < 0:
+            return BehaviorTree.FAIL
+
+        else:
+            for ball in big_balls:
+                distance = (ball.x - self.x) ** 2 + (ball.y - self.y) ** 2
+                if distance < (PIXEL_PER_METER * 10) ** 2:
+                    self.dir = math.atan2(ball.y - self.y, ball.x - self.x)
+                    return BehaviorTree.SUCCESS
+
+            # 큰공 전부 검사 시 근처에 X
+            self.speed = 0
+            return BehaviorTree.FAIL
+
+        pass
+
+    def find_small_balls(self):       # 작은 공 주변에 있는지 검사
+        small_balls = main_state.get_small_balls()
+        distance = 0
+        # 큰 공이 존재하면
+        if len(small_balls) < 0:
+            return BehaviorTree.FAIL
+
+        else:
+            for ball in small_balls:
+                distance = (ball.x - self.x) ** 2 + (ball.y - self.y) ** 2
+                if distance < (PIXEL_PER_METER * 10) ** 2:
+                    self.dir = math.atan2(ball.y - self.y, ball.x - self.x)
+                    return BehaviorTree.SUCCESS
+
+            # 작은공 전부 검사 시 근처에 X
+            self.speed = 0
+            return BehaviorTree.FAIL
+
+        pass
+
+    def big_ball_eat(self):
+        
+        pass
+
+    def small_ball_eat(self):
+
+        pass
+
+    def find_player(self):      # 탐색
         boy = main_state.get_boy()
         distance = (boy.x - self.x) ** 2 + (boy.y - self.y) ** 2
         if distance < (PIXEL_PER_METER * 10) ** 2:
@@ -82,7 +145,7 @@ class Zombie:
             return BehaviorTree.FAIL
         pass
 
-    def move_to_player(self):
+    def move_to_player(self):       #  플레이어로 이동
         self.speed = RUN_SPEED_PPS
         self.calculate_current_position()
         return BehaviorTree.SUCCESS
