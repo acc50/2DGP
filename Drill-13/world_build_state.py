@@ -8,6 +8,7 @@ import game_framework
 import game_world
 
 import main_state
+import rank_state
 
 from boy import Boy
 from zombie import Zombie
@@ -20,12 +21,21 @@ zombies = []
 name = "WorldBuildState"
 
 menu = None
+ranking = []
 
 def enter():
     global menu
     menu = load_image('menu.png')
     hide_cursor()
     hide_lattice()
+
+    with open('ranking.data', 'r') as f:
+        ranking_list = json.load(f)
+
+    global ranking
+    rank_state.set_ranking(ranking_list)
+    ranking = rank_state.get_ranking()
+
 
 def exit():
     global menu
@@ -77,8 +87,14 @@ def handle_events():
     for event in events:
         if event.type == SDL_QUIT:
             game_framework.quit()
+            with open('ranking.data', 'w') as f:
+                json.dump(ranking, f)
+
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
                 game_framework.quit()
+                with open('ranking.data', 'w') as f:
+                    json.dump(ranking, f)
+
         elif event.type == SDL_KEYDOWN and event.key == SDLK_n:
             create_new_world()
             game_framework.change_state(main_state)
