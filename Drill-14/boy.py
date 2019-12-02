@@ -119,12 +119,14 @@ class Boy:
         self.dir = 1
         self.x_velocity, self.y_velocity = 0, 0
         self.frame = 0
+        self.count = 0
         self.event_que = []
         self.cur_state = WalkingState
         self.cur_state.enter(self, None)
 
     def get_bb(self):
-        return self.x - 50, self.y - 50, self.x + 50, self.y + 50
+        cx, cy = self.x - self.bg.window_left, self.y - self.bg.window_bottom
+        return cx - 30, cy - 40, cx + 30, cy + 40
 
 
     def set_background(self, bg):
@@ -146,6 +148,13 @@ class Boy:
     def draw(self):
         self.cur_state.draw(self)
         self.font.draw(self.canvas_width//2 - 60, self.canvas_height//2 + 50, '(%5d, %5d)' % (self.x, self.y), (255, 255, 0))
+
+        cx, cy = self.x - self.bg.window_left, self.y - self.bg.window_bottom
+        self.font.draw(cx - 10, cy + 60, '(%d)' % self.count, (0, 0, 0))
+        draw_rectangle(*self.get_bb())
+
+    def eat(self):
+        self.count += 1
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
